@@ -10,9 +10,13 @@ from sklearn.metrics import f1_score
 
 from src.features.build_features import build_features
 from src.utils.logger import get_logger
+from pathlib import Path
 
-DATA_PATH = "data/raw/customer_data.csv"
-MODEL_PATH = "models/best_model.pkl"
+BASE_DIR = Path(__file__).resolve().parents[2]  # mlops-churn-pipeline/
+
+DATA_PATH = BASE_DIR / "data" / "raw" / "customer_data.csv"
+MODEL_PATH = BASE_DIR / "models" / "best_model.pkl"
+
 EXPERIMENT_NAME = "churn_prediction"
 
 logger = get_logger("TRAINING")

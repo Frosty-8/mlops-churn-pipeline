@@ -1,0 +1,51 @@
+name: Retrain Model Pipeline
+
+on:
+  schedule:
+    - cron: "0 2 * * *"   # Runs daily at 2 AM UTC
+  workflow_dispatch:      # Manual trigger from GitHub UI
+
+jobs:
+  retrain:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: mlops-churn-pipeline
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Upgrade pip
+        run: |
+          python -m pip install --upgrade pip
+
+      - name: Install Dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: Generate Synthetic Data
+        run: |
+          python -m src.data.generate_data
+
+      - name: Run Drift Detection
+        run: |
+          python -m src.drift.detect_drift
+
+      - name: Retrain Model
+        run: |
+          python -m src.training.retrain
+
+      - name: Commit Updated Model (if changed)
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "actions@github.com"
+          git add models/best_model.pkl || true
+          git commit -m "Auto-retrained model via GitHub Actions" || echo "No changes to commit"
+          git push

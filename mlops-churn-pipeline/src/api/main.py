@@ -4,13 +4,15 @@ import pandas as pd
 
 from src.features.build_features import build_features
 from src.utils.logger import get_logger
-
+from pathlib import Path
 logger = get_logger("API")
 
 app = FastAPI(title="Churn Prediction API")
+BASE_DIR = Path(__file__).resolve().parents[2]
+MODEL_PATH = BASE_DIR / "models" / "best_model.pkl"
 
 try:
-    model = joblib.load("models/best_model.pkl")
+    model = joblib.load(MODEL_PATH)
     logger.info("Model loaded successfully")
 except Exception:
     logger.exception("Failed to load model")
