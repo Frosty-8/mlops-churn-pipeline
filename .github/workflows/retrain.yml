@@ -3,7 +3,10 @@ name: Retrain Model Pipeline
 on:
   schedule:
     - cron: "0 2 * * *"   # Runs daily at 2 AM UTC
-  workflow_dispatch:      # Manual trigger from GitHub UI
+  workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   retrain:
@@ -16,6 +19,8 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Python
         uses: actions/setup-python@v4
@@ -42,10 +47,13 @@ jobs:
         run: |
           python -m src.training.retrain
 
-      - name: Commit Updated Model (if changed)
+      - name: Commit Updated Artifacts
         run: |
           git config --global user.name "github-actions"
           git config --global user.email "actions@github.com"
-          git add models/best_model.pkl || true
+
+          git add .
+
           git commit -m "Auto-retrained model via GitHub Actions" || echo "No changes to commit"
+
           git push
